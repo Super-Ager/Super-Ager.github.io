@@ -20,6 +20,11 @@ const imageInfo = document.getElementById('imageInfo');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Log configuration for debugging
+    console.log('Image folder:', IMAGE_FOLDER);
+    console.log('Default image:', DEFAULT_IMAGE);
+    console.log('User agent:', navigator.userAgent);
+    
     setupEventListeners();
     initializeProteins().then(() => {
         // Set default value in search box
@@ -28,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredProteins = [...allProteins];
         displayResults();
         loadDefaultImage();
+    }).catch(error => {
+        console.error('Initialization error:', error);
     });
 });
 
@@ -36,8 +43,7 @@ async function initializeProteins() {
     try {
         // Try to fetch a list file first
         try {
-            // const response = await fetch(`${IMAGE_FOLDER}/list.json`);
-            const response = await fetch(`list.json`);
+            const response = await fetch(`${IMAGE_FOLDER}/list.json`);
             if (response.ok) {
                 allProteins = await response.json();
                 console.log(`Loaded ${allProteins.length} proteins from list.json`);
@@ -292,7 +298,11 @@ function loadDefaultImage() {
 
 // Load protein image
 function loadImage(proteinName) {
-    const imagePath = `${IMAGE_FOLDER}/${proteinName}.png`;
+    // Construct image path - ensure proper URL format
+    let imagePath = `${IMAGE_FOLDER}/${proteinName}.png`;
+    
+    // Remove double slashes if IMAGE_FOLDER ends with / and path starts with /
+    imagePath = imagePath.replace(/([^:]\/)\/+/g, '$1');
     
     // Show loading
     loadingIndicator.classList.add('active');
@@ -301,55 +311,68 @@ function loadImage(proteinName) {
     proteinImage.style.display = 'none';
     imageInfo.textContent = '';
     
-    // Reset image to prevent caching issues
+    // Clear previous image and event handlers
     proteinImage.src = '';
+    proteinImage.onload = null;
+    proteinImage.onerror = null;
     
-    // Create new image to test if it exists and preload
-    const img = new Image();
+    // Set up timeout for slow connections (mobile networks)
+    const timeout = setTimeout(() => {
+        console.warn('Image load timeout:', imagePath);
+        showError('Image loading timeout. Please check your connection.');
+    }, 30000); // 30 seconds timeout
     
-    img.onload = () => {
-        // Image exists, now load it into the display element
-        proteinImage.src = imagePath;
-        proteinImage.alt = `Protein visualization: ${proteinName}`;
-        
-        // Handle successful load
-        const handleImageLoad = () => {
-            loadingIndicator.classList.remove('active');
-            proteinImage.classList.add('loaded');
-            proteinImage.style.display = 'block';
-            imageInfo.textContent = proteinName;
-            img.onload = null; // Clean up
-        };
-        
-        // Handle load error
-        const handleImageError = () => {
-            showError();
-            img.onerror = null; // Clean up
-        };
-        
-        // Set up event handlers
-        if (proteinImage.complete) {
-            // Image already loaded
-            handleImageLoad();
-        } else {
-            proteinImage.onload = handleImageLoad;
-            proteinImage.onerror = handleImageError;
-        }
+    // Handle successful load
+    const handleImageLoad = () => {
+        clearTimeout(timeout);
+        loadingIndicator.classList.remove('active');
+        proteinImage.classList.add('loaded');
+        proteinImage.style.display = 'block';
+        imageInfo.textContent = proteinName;
+        console.log('Image loaded successfully:', proteinName);
     };
     
-    img.onerror = () => {
-        showError();
+    // Handle load error with detailed error info
+    const handleImageError = (error) => {
+        clearTimeout(timeout);
+        console.error('Image load error:', imagePath, error);
+        showError(`Failed to load image: ${proteinName}. Please check the image path and network connection.`);
     };
     
-    // Start loading
-    img.src = imagePath;
+    // Set up event handlers before setting src
+    proteinImage.onload = handleImageLoad;
+    proteinImage.onerror = handleImageError;
+    
+    // Set image attributes
+    proteinImage.alt = `Protein visualization: ${proteinName}`;
+    
+    // For mobile browsers, add loading="lazy" attribute
+    if (!proteinImage.hasAttribute('loading')) {
+        proteinImage.setAttribute('loading', 'eager');
+    }
+    
+    // Start loading - set src last to trigger load
+    proteinImage.src = imagePath;
+    
+    // Fallback: if image is already cached and loaded immediately
+    if (proteinImage.complete && proteinImage.naturalWidth > 0) {
+        handleImageLoad();
+    }
 }
 
 // Show error message
-function showError() {
+function showError(customMessage) {
     loadingIndicator.classList.remove('active');
     errorMessage.style.display = 'block';
     proteinImage.classList.remove('loaded');
     imageInfo.textContent = '';
+    
+    // Update error message if custom message provided
+    if (customMessage) {
+        const errorText = errorMessage.querySelector('p');
+        if (errorText) {
+            errorText.textContent = customMessage;
+        }
+    }
 }
 
