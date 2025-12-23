@@ -1,7 +1,7 @@
 // Configuration
 // const IMAGE_FOLDER = 'protein_images';
 const IMAGE_FOLDER = 'https://proteinaging.oss-rg-china-mainland.aliyuncs.com/protein_images'; // 或自定义域名
-const DEFAULT_IMAGE = 'GDF15_Seq.12.34';
+const DEFAULT_IMAGE = 'NEFL_seq.10082.251';
 const DEBOUNCE_DELAY = 300; // milliseconds
 
 // State
@@ -36,7 +36,8 @@ async function initializeProteins() {
     try {
         // Try to fetch a list file first
         try {
-            const response = await fetch(`${IMAGE_FOLDER}/list.json`);
+            // const response = await fetch(`${IMAGE_FOLDER}/list.json`);
+            const response = await fetch(`list.json`);
             if (response.ok) {
                 allProteins = await response.json();
                 console.log(`Loaded ${allProteins.length} proteins from list.json`);
@@ -351,4 +352,3 @@ function showError() {
     proteinImage.classList.remove('loaded');
     imageInfo.textContent = '';
 }
-
