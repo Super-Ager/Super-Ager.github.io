@@ -303,46 +303,83 @@ function loadImage(proteinName) {
     
     // Reset image to prevent caching issues
     proteinImage.src = '';
+    proteinImage.removeAttribute('loading');
     
-    // Create new image to test if it exists and preload
-    const img = new Image();
-    
-    img.onload = () => {
-        // Image exists, now load it into the display element
-        proteinImage.src = imagePath;
-        proteinImage.alt = `Protein visualization: ${proteinName}`;
-        
-        // Handle successful load
-        const handleImageLoad = () => {
-            loadingIndicator.classList.remove('active');
-            proteinImage.classList.add('loaded');
-            proteinImage.style.display = 'block';
-            imageInfo.textContent = proteinName;
-            img.onload = null; // Clean up
-        };
-        
-        // Handle load error
-        const handleImageError = () => {
+    // Set up timeout for mobile networks (30 seconds)
+    let loadTimeout = setTimeout(() => {
+        if (loadingIndicator.classList.contains('active')) {
             showError();
-            img.onerror = null; // Clean up
-        };
-        
-        // Set up event handlers
-        if (proteinImage.complete) {
-            // Image already loaded
-            handleImageLoad();
-        } else {
-            proteinImage.onload = handleImageLoad;
-            proteinImage.onerror = handleImageError;
+            console.error('Image load timeout:', imagePath);
+        }
+    }, 30000);
+    
+    // Clean up timeout helper
+    const clearLoadTimeout = () => {
+        if (loadTimeout) {
+            clearTimeout(loadTimeout);
+            loadTimeout = null;
         }
     };
     
-    img.onerror = () => {
-        showError();
+    // Handle successful load
+    const handleImageLoad = () => {
+        clearLoadTimeout();
+        loadingIndicator.classList.remove('active');
+        proteinImage.classList.add('loaded');
+        proteinImage.style.display = 'block';
+        imageInfo.textContent = proteinName;
+        proteinImage.onload = null;
+        proteinImage.onerror = null;
     };
     
-    // Start loading
-    img.src = imagePath;
+    // Handle load error
+    const handleImageError = () => {
+        clearLoadTimeout();
+        showError();
+        console.error('Image load error:', imagePath);
+        proteinImage.onload = null;
+        proteinImage.onerror = null;
+    };
+    
+    // Set image attributes
+    proteinImage.alt = `Protein visualization: ${proteinName}`;
+    proteinImage.referrerPolicy = 'no-referrer-when-downgrade';
+    
+    // Try loading with crossOrigin first (for CORS), fallback to without if needed
+    let loadAttempt = 0;
+    const maxAttempts = 2;
+    
+    // Enhanced error handler that retries without CORS
+    const enhancedErrorHandler = () => {
+        loadAttempt++;
+        if (loadAttempt < maxAttempts) {
+            // Retry without crossOrigin
+            proteinImage.removeAttribute('crossorigin');
+            proteinImage.src = imagePath + '?t=' + Date.now();
+        } else {
+            // Final failure
+            handleImageError();
+        }
+    };
+    
+    // Set up event handlers before setting src
+    proteinImage.onload = handleImageLoad;
+    proteinImage.onerror = enhancedErrorHandler;
+    
+    // First attempt: try with crossOrigin (may not be needed, but helps with CORS)
+    try {
+        proteinImage.crossOrigin = 'anonymous';
+    } catch (e) {
+        // Ignore if crossOrigin not supported
+    }
+    
+    // Load image directly (simplified for mobile compatibility)
+    proteinImage.src = imagePath;
+    
+    // Check if image is already cached and loaded
+    if (proteinImage.complete && proteinImage.naturalWidth > 0) {
+        handleImageLoad();
+    }
 }
 
 // Show error message
