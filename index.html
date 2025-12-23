@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20-year longitudinal trajectory of 10,776 circulating proteins</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>20-year longitudinal trajectory of 10,776 circulating proteins</h1>
+            <p class="subtitle">Explore protein visualization images</p>
+        </header>
+
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search by gene name or sequence (e.g., NEFL_seq.10082.251)"
+                    autocomplete="off"
+                >
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </div>
+
+        <div class="image-container">
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="spinner"></div>
+                <p>Loading image...</p>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <p>Image not found. Please try another search.</p>
+            </div>
+            <img 
+                id="proteinImage" 
+                class="protein-image" 
+                alt="Protein visualization"
+                loading="lazy"
+            >
+            <div id="imageInfo" class="image-info"></div>
+        </div>
+
+        <div class="stats">
+            <p>Total proteins: <span id="totalCount">10,776</span></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,21 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Optional: Ignore protein images if they're too large for git
+# Uncomment the line below if you want to host images elsewhere
+# protein_images/*.png
+
+# But keep list.json
+!protein_images/list.json
+
