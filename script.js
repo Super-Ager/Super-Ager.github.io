@@ -43,7 +43,7 @@ async function initializeProteins() {
     try {
         // Try to fetch a list file first
         try {
-            const response = await fetch(`${IMAGE_FOLDER}/list.json`);
+            const response = await fetch(`list.json`);
             if (response.ok) {
                 allProteins = await response.json();
                 console.log(`Loaded ${allProteins.length} proteins from list.json`);
