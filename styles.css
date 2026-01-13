@@ -154,7 +154,7 @@ header h1 {
     background: #f8f9fa;
     border-radius: 16px;
     padding: 30px;
-    min-height: 500px;
+    min-height: 600px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -200,9 +200,7 @@ header h1 {
 
 .protein-image {
     display: none;
-    max-width: 80%;
-    max-height: 90vh;
-    width: auto;
+    width: 80%;
     height: auto;
     object-fit: contain;
     border-radius: 12px;
@@ -291,9 +289,7 @@ header h1 {
     }
 
     .protein-image {
-        max-width: 90%;
-        max-height: 75vh;
-        width: auto;
+        width: 90%;
         height: auto;
     }
 }
