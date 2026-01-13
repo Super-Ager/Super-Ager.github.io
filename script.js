@@ -1,6 +1,6 @@
 // Configuration
 // const IMAGE_FOLDER = 'protein_images';
-const IMAGE_FOLDER = 'https://proteinaging.oss-rg-china-mainland.aliyuncs.com'; // 或自定义域名
+const IMAGE_FOLDER = 'https://superager.oss-cn-shanghai.aliyuncs.com/aging/plots/plots/plots'; // 或自定义域名
 const DEFAULT_IMAGE = 'GDF15_seq.4374.45';
 const DEBOUNCE_DELAY = 300; // milliseconds
 
@@ -17,6 +17,28 @@ const proteinImage = document.getElementById('proteinImage');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const errorMessage = document.getElementById('errorMessage');
 const imageInfo = document.getElementById('imageInfo');
+
+// Helper function to convert protein name to image filename
+function convertToImageFilename(proteinName) {
+    // Protein name format: "A1BG_seq.16561.9"
+    // Image filename format: "seq.28449.7_gene.png"
+    
+    // Split by underscore to get parts
+    const parts = proteinName.split('_');
+    
+    if (parts.length === 2) {
+        const geneName = parts[0]; // e.g., "A1BG"
+        const seqId = parts[1]; // e.g., "seq.16561.9"
+        
+        // Return in image format: "seq.16561.9_gene.png"
+        // Note: We don't add .png extension here, it will be added in loadImage function
+        return `${seqId}_gene`;
+    }
+    
+    // If format doesn't match, return as is
+    console.warn(`Unexpected protein name format: ${proteinName}`);
+    return proteinName;
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -292,14 +314,16 @@ function loadDefaultImage() {
 
 // Load protein image
 function loadImage(proteinName) {
-    const imagePath = `${IMAGE_FOLDER}/${proteinName}.png`;
+    // Convert protein name to image filename format
+    const imageFilename = convertToImageFilename(proteinName);
+    const imagePath = `${IMAGE_FOLDER}/${imageFilename}.png`;
     
     // Show loading
     loadingIndicator.classList.add('active');
     errorMessage.style.display = 'none';
     proteinImage.classList.remove('loaded');
     proteinImage.style.display = 'none';
-    imageInfo.textContent = '';
+    imageInfo.textContent = proteinName; // Show original protein name
     
     // Reset image to prevent caching issues
     proteinImage.src = '';
