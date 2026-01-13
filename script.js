@@ -32,7 +32,7 @@ function convertToImageFilename(proteinName) {
         
         // Return in image format: "seq.16561.9_gene.png"
         // Note: We don't add .png extension here, it will be added in loadImage function
-        return `${seqId}_{geneName}`;
+        return `${seqId}_${geneName}`;
     }
     
     // If format doesn't match, return as is
